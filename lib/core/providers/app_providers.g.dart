@@ -89,7 +89,7 @@ final isAppReadyProvider = AutoDisposeProvider<bool>.internal(
 );
 
 typedef IsAppReadyRef = AutoDisposeProviderRef<bool>;
-String _$appInitializationHash() => r'eb87040a5ee3d20a172bef9221c2c56d7e07fe77';
+String _$appInitializationHash() => r'cdf86e2d6985c6dcee80f618bc032edf81011fc9';
 
 /// App initialization provider
 ///

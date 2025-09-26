@@ -1,9 +1,23 @@
 import 'package:flutter/foundation.dart';
 import '../hive_service.dart';
 import '../models/cache_item.dart';
+import 'package:hive/hive.dart';
 
 /// Repository for managing cached data using Hive
 class CacheRepository {
+  /// Safe getter for cache box - returns null if not initialized
+  Box<CacheItem>? get _cacheBox {
+    if (!HiveService.isInitialized) {
+      debugPrint('⚠️ CacheRepository: Hive not initialized yet');
+      return null;
+    }
+    try {
+      return HiveService.cacheBox;
+    } catch (e) {
+      debugPrint('❌ Error accessing cache box: $e');
+      return null;
+    }
+  }
   /// Store data in cache with expiration
   Future<void> put<T>({
     required String key,
@@ -12,7 +26,12 @@ class CacheRepository {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot store cache item: Hive not initialized');
+        return;
+      }
+
       final cacheItem = CacheItem.create(
         key: key,
         data: data,
@@ -35,7 +54,12 @@ class CacheRepository {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot store permanent cache item: Hive not initialized');
+        return;
+      }
+
       final cacheItem = CacheItem.permanent(
         key: key,
         data: data,
@@ -53,7 +77,12 @@ class CacheRepository {
   /// Get data from cache
   T? get<T>(String key) {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot get cache item: Hive not initialized');
+        return null;
+      }
+
       final cacheItem = box.get(key);
 
       if (cacheItem == null) {
@@ -79,7 +108,12 @@ class CacheRepository {
   /// Get cache item with full metadata
   CacheItem? getCacheItem(String key) {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot get cache item: Hive not initialized');
+        return null;
+      }
+
       final cacheItem = box.get(key);
 
       if (cacheItem == null) {
@@ -102,7 +136,11 @@ class CacheRepository {
   /// Check if key exists and is valid (not expired)
   bool contains(String key) {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return false;
+      }
       final cacheItem = box.get(key);
 
       if (cacheItem == null) return false;
@@ -121,7 +159,11 @@ class CacheRepository {
   /// Check if key exists regardless of expiration
   bool containsKey(String key) {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return false;
+      }
       return box.containsKey(key);
     } catch (e) {
       debugPrint('❌ Error checking key $key: $e');
@@ -132,7 +174,11 @@ class CacheRepository {
   /// Delete specific cache item
   Future<void> delete(String key) async {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return;
+      }
       await box.delete(key);
       debugPrint('🗑️ Cache item deleted: $key');
     } catch (e) {
@@ -143,7 +189,11 @@ class CacheRepository {
   /// Delete multiple cache items
   Future<void> deleteMultiple(List<String> keys) async {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return;
+      }
       for (final key in keys) {
         await box.delete(key);
       }
@@ -161,7 +211,11 @@ class CacheRepository {
   /// Clear all expired items
   Future<int> clearExpired() async {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return 0;
+      }
       final expiredKeys = <String>[];
       final now = DateTime.now();
 
@@ -187,7 +241,11 @@ class CacheRepository {
   /// Clear all cache items
   Future<void> clearAll() async {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return;
+      }
       final count = box.length;
       await box.clear();
       debugPrint('🧹 Cleared all cache items: $count items');
@@ -200,7 +258,11 @@ class CacheRepository {
   /// Clear cache items by pattern
   Future<int> clearByPattern(Pattern pattern) async {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return 0;
+      }
       final keysToDelete = <String>[];
 
       for (final key in box.keys) {
@@ -224,7 +286,11 @@ class CacheRepository {
   /// Clear cache items by type
   Future<int> clearByType(String dataType) async {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return 0;
+      }
       final keysToDelete = <String>[];
 
       for (final key in box.keys) {
@@ -249,7 +315,11 @@ class CacheRepository {
   /// Refresh cache item with new expiration
   Future<bool> refresh(String key, Duration newExpirationDuration) async {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return false;
+      }
       final cacheItem = box.get(key);
 
       if (cacheItem == null) return false;
@@ -268,7 +338,11 @@ class CacheRepository {
   /// Update cache item data
   Future<bool> update<T>(String key, T newData, {Duration? newExpirationDuration}) async {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return false;
+      }
       final cacheItem = box.get(key);
 
       if (cacheItem == null) return false;
@@ -287,7 +361,11 @@ class CacheRepository {
   /// Get all keys in cache
   List<String> getAllKeys() {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return [];
+      }
       return box.keys.cast<String>().toList();
     } catch (e) {
       debugPrint('❌ Error getting all keys: $e');
@@ -298,7 +376,11 @@ class CacheRepository {
   /// Get keys by pattern
   List<String> getKeysByPattern(Pattern pattern) {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return [];
+      }
       return box.keys
           .cast<String>()
           .where((key) => key.contains(pattern))
@@ -312,7 +394,11 @@ class CacheRepository {
   /// Get keys by data type
   List<String> getKeysByType(String dataType) {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return [];
+      }
       final keys = <String>[];
 
       for (final key in box.keys) {
@@ -332,7 +418,18 @@ class CacheRepository {
   /// Get cache statistics
   CacheStats getStats() {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return CacheStats(
+          totalItems: 0,
+          validItems: 0,
+          expiredItems: 0,
+          oldestItem: DateTime.now(),
+          newestItem: DateTime.now(),
+          typeCount: const {},
+        );
+      }
       final now = DateTime.now();
       var validItems = 0;
       var expiredItems = 0;
@@ -387,7 +484,11 @@ class CacheRepository {
   /// Get cache size in bytes (approximate)
   int getApproximateSize() {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return 0;
+      }
       // This is an approximation as Hive doesn't provide exact size
       return box.length * 1024; // Assume average 1KB per item
     } catch (e) {
@@ -399,7 +500,11 @@ class CacheRepository {
   /// Compact cache storage
   Future<void> compact() async {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return;
+      }
       await box.compact();
       debugPrint('✅ Cache storage compacted');
     } catch (e) {
@@ -410,7 +515,11 @@ class CacheRepository {
   /// Export cache data (for debugging or backup)
   Map<String, dynamic> exportCache({bool includeExpired = false}) {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return {};
+      }
       final now = DateTime.now();
       final exportData = <String, dynamic>{};
 
@@ -435,7 +544,11 @@ class CacheRepository {
   /// Watch cache changes for a specific key
   Stream<CacheItem?> watch(String key) {
     try {
-      final box = HiveService.cacheBox;
+      final box = _cacheBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access cache: Hive not initialized');
+        return Stream.value(null);
+      }
       return box.watch(key: key).map((event) => event.value as CacheItem?);
     } catch (e) {
       debugPrint('❌ Error watching cache key $key: $e');

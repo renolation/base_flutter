@@ -114,17 +114,29 @@ class SecureStorageNotifier extends _$SecureStorageNotifier {
 
 /// Hive storage providers
 @riverpod
-Box<AppSettings> appSettingsBox(AppSettingsBoxRef ref) {
+Box<AppSettings>? appSettingsBox(AppSettingsBoxRef ref) {
+  // Return null if not initialized yet
+  if (!HiveService.isInitialized) {
+    return null;
+  }
   return HiveService.appSettingsBox;
 }
 
 @riverpod
-Box<CacheItem> cacheBox(CacheBoxRef ref) {
+Box<CacheItem>? cacheBox(CacheBoxRef ref) {
+  // Return null if not initialized yet
+  if (!HiveService.isInitialized) {
+    return null;
+  }
   return HiveService.cacheBox;
 }
 
 @riverpod
-Box<UserPreferences> userPreferencesBox(UserPreferencesBoxRef ref) {
+Box<UserPreferences>? userPreferencesBox(UserPreferencesBoxRef ref) {
+  // Return null if not initialized yet
+  if (!HiveService.isInitialized) {
+    return null;
+  }
   return HiveService.userDataBox;
 }
 
@@ -137,12 +149,26 @@ class HiveStorageNotifier extends _$HiveStorageNotifier {
     final cacheBox = ref.watch(cacheBoxProvider);
     final userPreferencesBox = ref.watch(userPreferencesBoxProvider);
 
+    // Return empty stats if boxes are not initialized yet
+    // ignore: unnecessary_null_comparison
+    if (appSettingsBox == null || cacheBox == null || userPreferencesBox == null) {
+      return {
+        'appSettingsCount': 0,
+        'cacheItemsCount': 0,
+        'userPreferencesCount': 0,
+        'totalSize': 0,
+        'lastUpdated': DateTime.now().toIso8601String(),
+        'isInitialized': false,
+      };
+    }
+
     return {
       'appSettingsCount': appSettingsBox.length,
       'cacheItemsCount': cacheBox.length,
       'userPreferencesCount': userPreferencesBox.length,
       'totalSize': _calculateTotalSize(),
       'lastUpdated': DateTime.now().toIso8601String(),
+      'isInitialized': true,
     };
   }
 
@@ -151,6 +177,11 @@ class HiveStorageNotifier extends _$HiveStorageNotifier {
       final appSettingsBox = ref.read(appSettingsBoxProvider);
       final cacheBox = ref.read(cacheBoxProvider);
       final userPreferencesBox = ref.read(userPreferencesBoxProvider);
+
+      // ignore: unnecessary_null_comparison
+      if (appSettingsBox == null || cacheBox == null || userPreferencesBox == null) {
+        return 0;
+      }
 
       // Rough estimation of storage size
       return appSettingsBox.length + cacheBox.length + userPreferencesBox.length;
@@ -166,6 +197,12 @@ class HiveStorageNotifier extends _$HiveStorageNotifier {
       final appSettingsBox = ref.read(appSettingsBoxProvider);
       final cacheBox = ref.read(cacheBoxProvider);
       final userPreferencesBox = ref.read(userPreferencesBoxProvider);
+
+      // Check if boxes are initialized
+      if (appSettingsBox == null || cacheBox == null || userPreferencesBox == null) {
+        debugPrint('⚠️ Cannot compact storage: boxes not initialized yet');
+        return;
+      }
 
       await Future.wait([
         appSettingsBox.compact(),
@@ -184,6 +221,13 @@ class HiveStorageNotifier extends _$HiveStorageNotifier {
   Future<void> clearCache() async {
     try {
       final cacheBox = ref.read(cacheBoxProvider);
+
+      // Check if cache box is initialized
+      if (cacheBox == null) {
+        debugPrint('⚠️ Cannot clear cache: box not initialized yet');
+        return;
+      }
+
       await cacheBox.clear();
 
       _updateStats();
@@ -199,6 +243,17 @@ class HiveStorageNotifier extends _$HiveStorageNotifier {
       final appSettingsBox = ref.read(appSettingsBoxProvider);
       final cacheBox = ref.read(cacheBoxProvider);
       final userPreferencesBox = ref.read(userPreferencesBoxProvider);
+
+      // Check if boxes are initialized
+      if (appSettingsBox == null || cacheBox == null || userPreferencesBox == null) {
+        return {
+          'appSettings': {'count': 0, 'keys': <dynamic>[], 'isEmpty': true},
+          'cache': {'count': 0, 'keys': <dynamic>[], 'isEmpty': true},
+          'userPreferences': {'count': 0, 'keys': <dynamic>[], 'isEmpty': true},
+          'total': {'items': 0, 'estimatedSize': 0},
+          'isInitialized': false,
+        };
+      }
 
       return {
         'appSettings': {
@@ -220,6 +275,7 @@ class HiveStorageNotifier extends _$HiveStorageNotifier {
           'items': appSettingsBox.length + cacheBox.length + userPreferencesBox.length,
           'estimatedSize': _calculateTotalSize(),
         },
+        'isInitialized': true,
       };
     } catch (e) {
       debugPrint('❌ Error getting storage stats: $e');
@@ -228,14 +284,33 @@ class HiveStorageNotifier extends _$HiveStorageNotifier {
   }
 
   void _updateStats() {
-    state = {
-      ...state,
-      'appSettingsCount': ref.read(appSettingsBoxProvider).length,
-      'cacheItemsCount': ref.read(cacheBoxProvider).length,
-      'userPreferencesCount': ref.read(userPreferencesBoxProvider).length,
-      'totalSize': _calculateTotalSize(),
-      'lastUpdated': DateTime.now().toIso8601String(),
-    };
+    final appSettingsBox = ref.read(appSettingsBoxProvider);
+    final cacheBox = ref.read(cacheBoxProvider);
+    final userPreferencesBox = ref.read(userPreferencesBoxProvider);
+
+    // Only update stats if boxes are initialized
+    // ignore: unnecessary_null_comparison
+    if (appSettingsBox != null && cacheBox != null && userPreferencesBox != null) {
+      state = {
+        ...state,
+        'appSettingsCount': appSettingsBox.length,
+        'cacheItemsCount': cacheBox.length,
+        'userPreferencesCount': userPreferencesBox.length,
+        'totalSize': _calculateTotalSize(),
+        'lastUpdated': DateTime.now().toIso8601String(),
+        'isInitialized': true,
+      };
+    } else {
+      state = {
+        ...state,
+        'appSettingsCount': 0,
+        'cacheItemsCount': 0,
+        'userPreferencesCount': 0,
+        'totalSize': 0,
+        'lastUpdated': DateTime.now().toIso8601String(),
+        'isInitialized': false,
+      };
+    }
   }
 }
 
@@ -272,13 +347,19 @@ class StorageHealthMonitor extends _$StorageHealthMonitor {
         final cacheBox = ref.read(cacheBoxProvider);
         final userPreferencesBox = ref.read(userPreferencesBoxProvider);
 
-        if (!appSettingsBox.isOpen) errors.add('App settings box is not open');
-        if (!cacheBox.isOpen) errors.add('Cache box is not open');
-        if (!userPreferencesBox.isOpen) errors.add('User preferences box is not open');
+        // Check if boxes are initialized
+        // ignore: unnecessary_null_comparison
+        if (appSettingsBox == null || cacheBox == null || userPreferencesBox == null) {
+          warnings.add('Hive boxes not initialized yet');
+        } else {
+          if (!appSettingsBox.isOpen) errors.add('App settings box is not open');
+          if (!cacheBox.isOpen) errors.add('Cache box is not open');
+          if (!userPreferencesBox.isOpen) errors.add('User preferences box is not open');
 
-        // Check for large cache
-        if (cacheBox.length > 1000) {
-          warnings.add('Cache has more than 1000 items, consider cleanup');
+          // Check for large cache
+          if (cacheBox.length > 1000) {
+            warnings.add('Cache has more than 1000 items, consider cleanup');
+          }
         }
       } catch (e) {
         errors.add('Hive storage error: $e');

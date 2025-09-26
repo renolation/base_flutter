@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/route_paths.dart';
 import '../../../../core/routing/route_guards.dart';
 import '../../../../shared/presentation/providers/app_providers.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 
 /// Main settings page with theme switcher and navigation to other settings
 class SettingsPage extends ConsumerWidget {
@@ -96,9 +97,22 @@ class _ThemeSection extends StatelessWidget {
             Icons.palette_outlined,
             color: Theme.of(context).colorScheme.onSurface,
           ),
-          title: const Text('Theme'),
-          subtitle: Text(_getThemeModeText(themeMode)),
-          trailing: const Icon(Icons.chevron_right),
+          title: Text(
+            'Theme',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          subtitle: Text(
+            _getThemeModeText(themeMode),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           onTap: () => context.push(RoutePaths.settingsTheme),
         ),
         ListTile(
@@ -110,8 +124,18 @@ class _ThemeSection extends StatelessWidget {
                     : Icons.brightness_auto,
             color: Theme.of(context).colorScheme.onSurface,
           ),
-          title: const Text('Quick Theme Toggle'),
-          subtitle: const Text('Switch between light and dark mode'),
+          title: Text(
+            'Quick Theme Toggle',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          subtitle: Text(
+            'Switch between light and dark mode',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
           trailing: Switch(
             value: themeMode == ThemeMode.dark,
             onChanged: (value) {
@@ -152,32 +176,96 @@ class _AccountSection extends StatelessWidget {
       children: [
         if (authState == AuthState.authenticated) ...[
           ListTile(
-            leading: const Icon(Icons.person_outline),
-            title: const Text('Profile'),
-            subtitle: const Text('Manage your profile information'),
-            trailing: const Icon(Icons.chevron_right),
+            leading: Icon(
+              Icons.person_outline,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            title: Text(
+              'Profile',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            subtitle: Text(
+              'Manage your profile information',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: Icon(
+            Icons.chevron_right,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
             onTap: () => context.push(RoutePaths.profile),
           ),
           ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Sign Out'),
-            subtitle: const Text('Sign out of your account'),
-            trailing: const Icon(Icons.chevron_right),
+            leading: Icon(
+              Icons.logout,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            title: Text(
+              'Sign Out',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            subtitle: Text(
+              'Sign out of your account',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: Icon(
+            Icons.chevron_right,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
             onTap: () => _showSignOutDialog(context, ref),
           ),
         ] else ...[
           ListTile(
-            leading: const Icon(Icons.login),
-            title: const Text('Sign In'),
-            subtitle: const Text('Sign in to your account'),
-            trailing: const Icon(Icons.chevron_right),
+            leading: Icon(
+              Icons.login,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            title: Text(
+              'Sign In',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            subtitle: Text(
+              'Sign in to your account',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: Icon(
+            Icons.chevron_right,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
             onTap: () => context.push(RoutePaths.login),
           ),
           ListTile(
-            leading: const Icon(Icons.person_add_outlined),
-            title: const Text('Create Account'),
-            subtitle: const Text('Sign up for a new account'),
-            trailing: const Icon(Icons.chevron_right),
+            leading: Icon(
+              Icons.person_add_outlined,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            title: Text(
+              'Create Account',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            subtitle: Text(
+              'Sign up for a new account',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: Icon(
+            Icons.chevron_right,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
             onTap: () => context.push(RoutePaths.register),
           ),
         ],
@@ -200,7 +288,7 @@ class _AccountSection extends StatelessWidget {
             FilledButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                ref.read(authStateProvider.notifier).logout();
+                ref.read(authNotifierProvider.notifier).logout();
               },
               child: const Text('Sign Out'),
             ),
@@ -217,17 +305,49 @@ class _AppSettingsSection extends StatelessWidget {
     return Column(
       children: [
         ListTile(
-          leading: const Icon(Icons.notifications_outlined),
-          title: const Text('Notifications'),
-          subtitle: const Text('Manage notification preferences'),
-          trailing: const Icon(Icons.chevron_right),
+          leading: Icon(
+            Icons.notifications_outlined,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          title: Text(
+            'Notifications',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          subtitle: Text(
+            'Manage notification preferences',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           onTap: () => context.push(RoutePaths.settingsNotifications),
         ),
         ListTile(
-          leading: const Icon(Icons.language),
-          title: const Text('Language'),
-          subtitle: const Text('English (United States)'),
-          trailing: const Icon(Icons.chevron_right),
+          leading: Icon(
+            Icons.language,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          title: Text(
+            'Language',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          subtitle: Text(
+            'English (United States)',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Language settings coming soon!')),
@@ -235,10 +355,26 @@ class _AppSettingsSection extends StatelessWidget {
           },
         ),
         ListTile(
-          leading: const Icon(Icons.storage_outlined),
-          title: const Text('Storage'),
-          subtitle: const Text('Manage local data and cache'),
-          trailing: const Icon(Icons.chevron_right),
+          leading: Icon(
+            Icons.storage_outlined,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          title: Text(
+            'Storage',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          subtitle: Text(
+            'Manage local data and cache',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Storage settings coming soon!')),
@@ -256,17 +392,49 @@ class _PrivacySection extends StatelessWidget {
     return Column(
       children: [
         ListTile(
-          leading: const Icon(Icons.privacy_tip_outlined),
-          title: const Text('Privacy'),
-          subtitle: const Text('Privacy settings and data protection'),
-          trailing: const Icon(Icons.chevron_right),
+          leading: Icon(
+            Icons.privacy_tip_outlined,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          title: Text(
+            'Privacy',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          subtitle: Text(
+            'Privacy settings and data protection',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           onTap: () => context.push(RoutePaths.settingsPrivacy),
         ),
         ListTile(
-          leading: const Icon(Icons.security),
-          title: const Text('Security'),
-          subtitle: const Text('App security and permissions'),
-          trailing: const Icon(Icons.chevron_right),
+          leading: Icon(
+            Icons.security,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          title: Text(
+            'Security',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          subtitle: Text(
+            'App security and permissions',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Security settings coming soon!')),
@@ -284,17 +452,49 @@ class _AboutSection extends StatelessWidget {
     return Column(
       children: [
         ListTile(
-          leading: const Icon(Icons.info_outlined),
-          title: const Text('About'),
-          subtitle: const Text('App version and information'),
-          trailing: const Icon(Icons.chevron_right),
+          leading: Icon(
+            Icons.info_outlined,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          title: Text(
+            'About',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          subtitle: Text(
+            'App version and information',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           onTap: () => context.push(RoutePaths.about),
         ),
         ListTile(
-          leading: const Icon(Icons.help_outline),
-          title: const Text('Help & Support'),
-          subtitle: const Text('Get help and contact support'),
-          trailing: const Icon(Icons.chevron_right),
+          leading: Icon(
+            Icons.help_outline,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          title: Text(
+            'Help & Support',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          subtitle: Text(
+            'Get help and contact support',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Help & Support coming soon!')),
@@ -302,10 +502,26 @@ class _AboutSection extends StatelessWidget {
           },
         ),
         ListTile(
-          leading: const Icon(Icons.article_outlined),
-          title: const Text('Terms of Service'),
-          subtitle: const Text('View terms and conditions'),
-          trailing: const Icon(Icons.chevron_right),
+          leading: Icon(
+            Icons.article_outlined,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          title: Text(
+            'Terms of Service',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          subtitle: Text(
+            'View terms and conditions',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Terms of Service coming soon!')),
@@ -313,10 +529,26 @@ class _AboutSection extends StatelessWidget {
           },
         ),
         ListTile(
-          leading: const Icon(Icons.policy_outlined),
-          title: const Text('Privacy Policy'),
-          subtitle: const Text('View privacy policy'),
-          trailing: const Icon(Icons.chevron_right),
+          leading: Icon(
+            Icons.policy_outlined,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          title: Text(
+            'Privacy Policy',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          subtitle: Text(
+            'View privacy policy',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Privacy Policy coming soon!')),

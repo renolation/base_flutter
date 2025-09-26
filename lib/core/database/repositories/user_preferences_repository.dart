@@ -1,9 +1,23 @@
 import 'package:flutter/foundation.dart';
 import '../hive_service.dart';
 import '../models/user_preferences.dart';
+import 'package:hive/hive.dart';
 
 /// Repository for managing user preferences using Hive
 class UserPreferencesRepository {
+  /// Safe getter for user preferences box - returns null if not initialized
+  Box<UserPreferences>? get _userPreferencesBox {
+    if (!HiveService.isInitialized) {
+      debugPrint('⚠️ UserPreferencesRepository: Hive not initialized yet');
+      return null;
+    }
+    try {
+      return HiveService.userDataBox;
+    } catch (e) {
+      debugPrint('❌ Error accessing user preferences box: $e');
+      return null;
+    }
+  }
   static const String _defaultKey = 'current_user_preferences';
 
   /// Get the current user preferences (alias for getUserPreferences)
@@ -14,7 +28,11 @@ class UserPreferencesRepository {
   /// Get the current user preferences
   UserPreferences? getUserPreferences([String? userId]) {
     try {
-      final box = HiveService.userDataBox;
+      final box = _userPreferencesBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access user preferences: Hive not initialized');
+        return null;
+      }
       final key = userId ?? _defaultKey;
 
       final preferences = box.get(key);
@@ -38,7 +56,11 @@ class UserPreferencesRepository {
   /// Save user preferences
   Future<void> saveUserPreferences(UserPreferences preferences, [String? userId]) async {
     try {
-      final box = HiveService.userDataBox;
+      final box = _userPreferencesBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access user preferences: Hive not initialized');
+        return;
+      }
       final key = userId ?? _defaultKey;
 
       final updatedPreferences = preferences.copyWith(lastUpdated: DateTime.now());
@@ -212,7 +234,11 @@ class UserPreferencesRepository {
   /// Check if user preferences exist
   bool hasUserPreferences([String? userId]) {
     try {
-      final box = HiveService.userDataBox;
+      final box = _userPreferencesBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access user preferences: Hive not initialized');
+        return false;
+      }
       final key = userId ?? _defaultKey;
       return box.containsKey(key);
     } catch (e) {
@@ -224,7 +250,11 @@ class UserPreferencesRepository {
   /// Clear user preferences (use with caution)
   Future<void> clearUserPreferences([String? userId]) async {
     try {
-      final box = HiveService.userDataBox;
+      final box = _userPreferencesBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access user preferences: Hive not initialized');
+        return;
+      }
       final key = userId ?? _defaultKey;
       await box.delete(key);
       debugPrint('✅ User preferences cleared for key: $key');
@@ -237,7 +267,11 @@ class UserPreferencesRepository {
   /// Get all user IDs that have preferences stored
   List<String> getAllUserIds() {
     try {
-      final box = HiveService.userDataBox;
+      final box = _userPreferencesBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access user preferences: Hive not initialized');
+        return [];
+      }
       return box.keys.cast<String>().where((key) => key != _defaultKey).toList();
     } catch (e) {
       debugPrint('❌ Error getting all user IDs: $e');
@@ -248,7 +282,11 @@ class UserPreferencesRepository {
   /// Delete preferences for a specific user
   Future<void> deleteUserPreferences(String userId) async {
     try {
-      final box = HiveService.userDataBox;
+      final box = _userPreferencesBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access user preferences: Hive not initialized');
+        return;
+      }
       await box.delete(userId);
       debugPrint('✅ User preferences deleted for user: $userId');
     } catch (e) {
@@ -289,7 +327,11 @@ class UserPreferencesRepository {
   /// Watch user preferences changes
   Stream<UserPreferences?> watchUserPreferences([String? userId]) {
     try {
-      final box = HiveService.userDataBox;
+      final box = _userPreferencesBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access user preferences: Hive not initialized');
+        return Stream.value(null);
+      }
       final key = userId ?? _defaultKey;
       return box.watch(key: key).map((event) => event.value as UserPreferences?);
     } catch (e) {
@@ -301,7 +343,11 @@ class UserPreferencesRepository {
   /// Compact user preferences storage
   Future<void> compact() async {
     try {
-      final box = HiveService.userDataBox;
+      final box = _userPreferencesBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access user preferences: Hive not initialized');
+        return;
+      }
       await box.compact();
       debugPrint('✅ User preferences storage compacted');
     } catch (e) {
@@ -312,7 +358,11 @@ class UserPreferencesRepository {
   /// Get storage statistics
   Map<String, dynamic> getStorageStats() {
     try {
-      final box = HiveService.userDataBox;
+      final box = _userPreferencesBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access user preferences: Hive not initialized');
+        return {};
+      }
       final allUserIds = getAllUserIds();
 
       return {

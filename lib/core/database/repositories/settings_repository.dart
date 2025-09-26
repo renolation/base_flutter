@@ -1,15 +1,33 @@
 import 'package:flutter/foundation.dart';
 import '../hive_service.dart';
 import '../models/app_settings.dart';
+import 'package:hive/hive.dart';
 
 /// Repository for managing application settings using Hive
 class SettingsRepository {
+  /// Safe getter for app settings box - returns null if not initialized
+  Box<AppSettings>? get _settingsBox {
+    if (!HiveService.isInitialized) {
+      debugPrint('⚠️ SettingsRepository: Hive not initialized yet');
+      return null;
+    }
+    try {
+      return HiveService.appSettingsBox;
+    } catch (e) {
+      debugPrint('❌ Error accessing settings box: $e');
+      return null;
+    }
+  }
   static const String _defaultKey = 'app_settings';
 
   /// Get the current app settings
   AppSettings getSettings() {
     try {
-      final box = HiveService.appSettingsBox;
+      final box = _settingsBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access settings: Hive not initialized');
+        return AppSettings.defaultSettings();
+      }
       final settings = box.get(_defaultKey);
 
       if (settings == null) {
@@ -39,7 +57,11 @@ class SettingsRepository {
   /// Save app settings
   Future<void> saveSettings(AppSettings settings) async {
     try {
-      final box = HiveService.appSettingsBox;
+      final box = _settingsBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access settings: Hive not initialized');
+        return;
+      }
       final updatedSettings = settings.copyWith(lastUpdated: DateTime.now());
       await box.put(_defaultKey, updatedSettings);
       debugPrint('✅ Settings saved successfully');
@@ -153,7 +175,11 @@ class SettingsRepository {
   /// Check if settings exist
   bool hasSettings() {
     try {
-      final box = HiveService.appSettingsBox;
+      final box = _settingsBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access settings: Hive not initialized');
+        return false;
+      }
       return box.containsKey(_defaultKey);
     } catch (e) {
       debugPrint('❌ Error checking settings existence: $e');
@@ -164,7 +190,11 @@ class SettingsRepository {
   /// Clear all settings (use with caution)
   Future<void> clearSettings() async {
     try {
-      final box = HiveService.appSettingsBox;
+      final box = _settingsBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access settings: Hive not initialized');
+        return;
+      }
       await box.delete(_defaultKey);
       debugPrint('✅ Settings cleared');
     } catch (e) {
@@ -177,7 +207,11 @@ class SettingsRepository {
   Map<String, dynamic> getSettingsStats() {
     try {
       final settings = getSettings();
-      final box = HiveService.appSettingsBox;
+      final box = _settingsBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access settings: Hive not initialized');
+        return {};
+      }
 
       return {
         'hasCustomSettings': settings.customSettings?.isNotEmpty ?? false,
@@ -225,7 +259,11 @@ class SettingsRepository {
   /// Watch settings changes
   Stream<AppSettings> watchSettings() {
     try {
-      final box = HiveService.appSettingsBox;
+      final box = _settingsBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access settings: Hive not initialized');
+        return Stream.value(AppSettings.defaultSettings());
+      }
       return box.watch(key: _defaultKey).map((event) {
         final settings = event.value as AppSettings?;
         return settings ?? AppSettings.defaultSettings();
@@ -239,7 +277,11 @@ class SettingsRepository {
   /// Compact settings storage
   Future<void> compact() async {
     try {
-      final box = HiveService.appSettingsBox;
+      final box = _settingsBox;
+      if (box == null) {
+        debugPrint('⚠️ Cannot access settings: Hive not initialized');
+        return;
+      }
       await box.compact();
       debugPrint('✅ Settings storage compacted');
     } catch (e) {

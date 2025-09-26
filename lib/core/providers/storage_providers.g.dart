@@ -24,13 +24,13 @@ final secureStorageProvider =
 );
 
 typedef SecureStorageRef = AutoDisposeProviderRef<FlutterSecureStorage>;
-String _$appSettingsBoxHash() => r'9e348c0084f7f23850f09adb2e6496fdbf8f2bdf';
+String _$appSettingsBoxHash() => r'34dbc09afd824b056d366fec7d367c5021735bac';
 
 /// Hive storage providers
 ///
 /// Copied from [appSettingsBox].
 @ProviderFor(appSettingsBox)
-final appSettingsBoxProvider = AutoDisposeProvider<Box<AppSettings>>.internal(
+final appSettingsBoxProvider = AutoDisposeProvider<Box<AppSettings>?>.internal(
   appSettingsBox,
   name: r'appSettingsBoxProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -40,12 +40,12 @@ final appSettingsBoxProvider = AutoDisposeProvider<Box<AppSettings>>.internal(
   allTransitiveDependencies: null,
 );
 
-typedef AppSettingsBoxRef = AutoDisposeProviderRef<Box<AppSettings>>;
-String _$cacheBoxHash() => r'949b55a2b7423b7fa7182b8e45adf02367ab8c7c';
+typedef AppSettingsBoxRef = AutoDisposeProviderRef<Box<AppSettings>?>;
+String _$cacheBoxHash() => r'09bd635816f1934066a219a915b7b653d4ccbb22';
 
 /// See also [cacheBox].
 @ProviderFor(cacheBox)
-final cacheBoxProvider = AutoDisposeProvider<Box<CacheItem>>.internal(
+final cacheBoxProvider = AutoDisposeProvider<Box<CacheItem>?>.internal(
   cacheBox,
   name: r'cacheBoxProvider',
   debugGetCreateSourceHash:
@@ -54,14 +54,14 @@ final cacheBoxProvider = AutoDisposeProvider<Box<CacheItem>>.internal(
   allTransitiveDependencies: null,
 );
 
-typedef CacheBoxRef = AutoDisposeProviderRef<Box<CacheItem>>;
+typedef CacheBoxRef = AutoDisposeProviderRef<Box<CacheItem>?>;
 String _$userPreferencesBoxHash() =>
-    r'38e2eab12afb00cca5ad2f48bf1f9ec76cc962c8';
+    r'f2aee9cdfcef7da5c9bb04ddd5044ae80ff8674e';
 
 /// See also [userPreferencesBox].
 @ProviderFor(userPreferencesBox)
 final userPreferencesBoxProvider =
-    AutoDisposeProvider<Box<UserPreferences>>.internal(
+    AutoDisposeProvider<Box<UserPreferences>?>.internal(
   userPreferencesBox,
   name: r'userPreferencesBoxProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -71,7 +71,7 @@ final userPreferencesBoxProvider =
   allTransitiveDependencies: null,
 );
 
-typedef UserPreferencesBoxRef = AutoDisposeProviderRef<Box<UserPreferences>>;
+typedef UserPreferencesBoxRef = AutoDisposeProviderRef<Box<UserPreferences>?>;
 String _$secureStorageNotifierHash() =>
     r'08d6cb392865d7483027fde37192c07cb944c45f';
 
@@ -92,7 +92,7 @@ final secureStorageNotifierProvider = AutoDisposeAsyncNotifierProvider<
 
 typedef _$SecureStorageNotifier = AutoDisposeAsyncNotifier<Map<String, String>>;
 String _$hiveStorageNotifierHash() =>
-    r'5d91bf162282fcfbef13aa7296255bb87640af51';
+    r'9f066e5f7959b87cb9955676c2bd1c38c4e04aca';
 
 /// Hive storage notifier for managing Hive data
 ///
@@ -111,7 +111,7 @@ final hiveStorageNotifierProvider = AutoDisposeNotifierProvider<
 
 typedef _$HiveStorageNotifier = AutoDisposeNotifier<Map<String, dynamic>>;
 String _$storageHealthMonitorHash() =>
-    r'1d52e331a84bd59a36055f5e8963eaa996f9c235';
+    r'bea5ed421fcc5775c20692fddbc82fb9183d2e00';
 
 /// Storage health monitor
 ///

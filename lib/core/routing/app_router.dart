@@ -6,6 +6,7 @@ import 'route_names.dart';
 import 'route_paths.dart';
 import 'route_guards.dart';
 import 'error_page.dart';
+import '../../features/auth/presentation/pages/pages.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/todos/presentation/screens/home_screen.dart';
@@ -101,7 +102,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: RoutePaths.login,
         name: RouteNames.login,
         pageBuilder: (context, state) => _buildPageWithTransition(
-          child: const _PlaceholderPage(title: 'Login'),
+          child: const LoginPage(),
           state: state,
         ),
       ),
@@ -109,7 +110,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: RoutePaths.register,
         name: RouteNames.register,
         pageBuilder: (context, state) => _buildPageWithTransition(
-          child: const _PlaceholderPage(title: 'Register'),
+          child: const RegisterPage(),
           state: state,
         ),
       ),

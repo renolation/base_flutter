@@ -1,51 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'route_paths.dart';
+import '../../features/auth/presentation/providers/auth_providers.dart';
 
-/// Authentication state provider
-final authStateProvider = StateNotifierProvider<AuthStateNotifier, AuthState>(
-  (ref) => AuthStateNotifier(),
-);
+/// Legacy auth state provider - redirecting to proper auth provider
+final authStateProvider = Provider<AuthState>((ref) {
+  final authState = ref.watch(authNotifierProvider);
+  return authState.when(
+    initial: () => AuthState.unknown,
+    loading: () => AuthState.unknown,
+    authenticated: (_) => AuthState.authenticated,
+    unauthenticated: (_) => AuthState.unauthenticated,
+    error: (_) => AuthState.unauthenticated,
+  );
+});
 
-/// Authentication state
+/// Authentication state enum for routing
 enum AuthState {
   unknown,
   authenticated,
   unauthenticated,
-}
-
-/// Authentication state notifier
-class AuthStateNotifier extends StateNotifier<AuthState> {
-  AuthStateNotifier() : super(AuthState.unknown) {
-    _checkInitialAuth();
-  }
-
-  Future<void> _checkInitialAuth() async {
-    // TODO: Implement actual auth check logic
-    // For now, simulate checking stored auth token
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    // Mock authentication check
-    // In a real app, you would check secure storage for auth token
-    state = AuthState.unauthenticated;
-  }
-
-  Future<void> login(String email, String password) async {
-    // TODO: Implement actual login logic
-    await Future.delayed(const Duration(seconds: 1));
-    state = AuthState.authenticated;
-  }
-
-  Future<void> logout() async {
-    // TODO: Implement actual logout logic
-    await Future.delayed(const Duration(milliseconds: 300));
-    state = AuthState.unauthenticated;
-  }
-
-  Future<void> register(String email, String password) async {
-    // TODO: Implement actual registration logic
-    await Future.delayed(const Duration(seconds: 1));
-    state = AuthState.authenticated;
-  }
 }
 
 /// Route guard utility class

@@ -1,10 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../core/constants/storage_constants.dart';
+import '../../../core/database/models/app_settings.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/providers/network_providers.dart';
+import '../../../core/providers/storage_providers.dart' as storage;
 
 /// Secure storage provider
 final secureStorageProvider = Provider<FlutterSecureStorage>(
@@ -29,19 +32,19 @@ final httpClientProvider = Provider<DioClient>(
   },
 );
 
-/// App settings Hive box provider
-final appSettingsBoxProvider = Provider<Box>(
-  (ref) => Hive.box(StorageConstants.appSettingsBox),
+/// App settings Hive box provider - uses safe provider from storage_providers.dart
+final appSettingsBoxProvider = Provider<Box?>(
+  (ref) => ref.watch(storage.appSettingsBoxProvider),
 );
 
-/// Cache Hive box provider
-final cacheBoxProvider = Provider<Box>(
-  (ref) => Hive.box(StorageConstants.cacheBox),
+/// Cache Hive box provider - uses safe provider from storage_providers.dart
+final cacheBoxProvider = Provider<Box?>(
+  (ref) => ref.watch(storage.cacheBoxProvider),
 );
 
-/// User data Hive box provider
-final userDataBoxProvider = Provider<Box>(
-  (ref) => Hive.box(StorageConstants.userDataBox),
+/// User data Hive box provider - uses safe provider from storage_providers.dart
+final userDataBoxProvider = Provider<Box?>(
+  (ref) => ref.watch(storage.userPreferencesBoxProvider),
 );
 
 /// Theme mode provider
@@ -51,33 +54,58 @@ final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>(
 
 /// Theme mode notifier
 class ThemeModeNotifier extends StateNotifier<ThemeMode> {
-  final Box _box;
+  final Box? _box;
+  static const String _settingsKey = 'app_settings';
 
   ThemeModeNotifier(this._box) : super(ThemeMode.system) {
     _loadThemeMode();
   }
 
   void _loadThemeMode() {
-    final isDarkMode = _box.get(StorageConstants.isDarkModeKey, defaultValue: null);
-    if (isDarkMode == null) {
+    if (_box == null || !_box.isOpen) {
+      // Default to system theme if box is not ready
       state = ThemeMode.system;
-    } else {
-      state = isDarkMode ? ThemeMode.dark : ThemeMode.light;
+      return;
+    }
+
+    try {
+      // Get AppSettings from box
+      final settings = _box.get(_settingsKey) as AppSettings?;
+      if (settings != null) {
+        state = _themeModeFromString(settings.themeMode);
+      } else {
+        state = ThemeMode.system;
+      }
+    } catch (e) {
+      // Fallback to system theme on any error
+      debugPrint('Error loading theme mode: $e');
+      state = ThemeMode.system;
     }
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
     state = mode;
-    switch (mode) {
-      case ThemeMode.system:
-        await _box.delete(StorageConstants.isDarkModeKey);
-        break;
-      case ThemeMode.light:
-        await _box.put(StorageConstants.isDarkModeKey, false);
-        break;
-      case ThemeMode.dark:
-        await _box.put(StorageConstants.isDarkModeKey, true);
-        break;
+
+    // Only persist if box is available
+    if (_box == null || !_box.isOpen) {
+      return;
+    }
+
+    try {
+      // Get current settings or create default
+      var settings = _box.get(_settingsKey) as AppSettings?;
+      settings ??= AppSettings.defaultSettings();
+
+      // Update theme mode
+      final updatedSettings = settings.copyWith(
+        themeMode: _themeModeToString(mode),
+        lastUpdated: DateTime.now(),
+      );
+
+      // Save to box
+      await _box.put(_settingsKey, updatedSettings);
+    } catch (e) {
+      debugPrint('Error saving theme mode: $e');
     }
   }
 
@@ -90,6 +118,28 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
       case ThemeMode.dark:
         await setThemeMode(ThemeMode.light);
         break;
+    }
+  }
+
+  ThemeMode _themeModeFromString(String mode) {
+    switch (mode) {
+      case 'light':
+        return ThemeMode.light;
+      case 'dark':
+        return ThemeMode.dark;
+      default:
+        return ThemeMode.system;
+    }
+  }
+
+  String _themeModeToString(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return 'light';
+      case ThemeMode.dark:
+        return 'dark';
+      case ThemeMode.system:
+        return 'system';
     }
   }
 }

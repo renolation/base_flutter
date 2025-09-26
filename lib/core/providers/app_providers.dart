@@ -68,7 +68,7 @@ class AppInitialization extends _$AppInitialization {
 
       // Initialize Hive
       debugPrint('📦 Initializing Hive database...');
-      await HiveService.initialize();
+      // await HiveService.initialize();
 
       // Initialize repositories
       debugPrint('🗂️ Initializing repositories...');
