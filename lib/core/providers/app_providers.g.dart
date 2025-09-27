@@ -89,6 +89,25 @@ final isAppReadyProvider = AutoDisposeProvider<bool>.internal(
 );
 
 typedef IsAppReadyRef = AutoDisposeProviderRef<bool>;
+String _$environmentDebugInfoHash() =>
+    r'8a936abed2173bd1539eec64231e8d970ed7382a';
+
+/// Environment debug information provider
+///
+/// Copied from [environmentDebugInfo].
+@ProviderFor(environmentDebugInfo)
+final environmentDebugInfoProvider =
+    AutoDisposeProvider<Map<String, dynamic>>.internal(
+  environmentDebugInfo,
+  name: r'environmentDebugInfoProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$environmentDebugInfoHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef EnvironmentDebugInfoRef = AutoDisposeProviderRef<Map<String, dynamic>>;
 String _$appInitializationHash() => r'cdf86e2d6985c6dcee80f618bc032edf81011fc9';
 
 /// App initialization provider
@@ -142,7 +161,7 @@ final featureFlagsProvider =
 );
 
 typedef _$FeatureFlags = AutoDisposeNotifier<Map<String, bool>>;
-String _$appConfigurationHash() => r'115fff1ac67a37ff620bbd15ea142a7211e9dc9c';
+String _$appConfigurationHash() => r'7699bbd57d15b91cd520a876454368e5b97342bd';
 
 /// App configuration provider
 ///
@@ -196,5 +215,24 @@ final errorTrackerProvider = AutoDisposeNotifierProvider<ErrorTracker,
 );
 
 typedef _$ErrorTracker = AutoDisposeNotifier<List<Map<String, dynamic>>>;
+String _$apiConnectivityTestHash() =>
+    r'19c63d75d09ad8f95452afb1a409528fcdd5cbaa';
+
+/// API connectivity test provider
+///
+/// Copied from [ApiConnectivityTest].
+@ProviderFor(ApiConnectivityTest)
+final apiConnectivityTestProvider = AutoDisposeAsyncNotifierProvider<
+    ApiConnectivityTest, Map<String, dynamic>>.internal(
+  ApiConnectivityTest.new,
+  name: r'apiConnectivityTestProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$apiConnectivityTestHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$ApiConnectivityTest = AutoDisposeAsyncNotifier<Map<String, dynamic>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

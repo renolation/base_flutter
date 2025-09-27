@@ -1,29 +1,22 @@
+import '../constants/environment_config.dart';
+
 /// API constants for network configuration
 class ApiConstants {
   // Private constructor to prevent instantiation
   const ApiConstants._();
 
-  // Base URLs for different environments
-  static const String baseUrlDev = 'https://api-dev.example.com';
-  static const String baseUrlStaging = 'https://api-staging.example.com';
-  static const String baseUrlProd = 'https://api.example.com';
+  // Environment-based configuration
+  static String get baseUrl => EnvironmentConfig.baseUrl;
+  static String get apiPath => EnvironmentConfig.apiPath;
 
-  // Current environment base URL
-  // In a real app, this would be determined by build configuration
-  static const String baseUrl = baseUrlDev;
+  // Timeout configurations (environment-specific)
+  static int get connectTimeout => EnvironmentConfig.connectTimeout;
+  static int get receiveTimeout => EnvironmentConfig.receiveTimeout;
+  static int get sendTimeout => EnvironmentConfig.sendTimeout;
 
-  // API versioning
-  static const String apiVersion = 'v1';
-  static const String apiPath = '/api/$apiVersion';
-
-  // Timeout configurations (in milliseconds)
-  static const int connectTimeout = 30000; // 30 seconds
-  static const int receiveTimeout = 30000; // 30 seconds
-  static const int sendTimeout = 30000; // 30 seconds
-
-  // Retry configurations
-  static const int maxRetries = 3;
-  static const Duration retryDelay = Duration(seconds: 1);
+  // Retry configurations (environment-specific)
+  static int get maxRetries => EnvironmentConfig.maxRetries;
+  static Duration get retryDelay => EnvironmentConfig.retryDelay;
 
   // Headers
   static const String contentType = 'application/json';
@@ -35,11 +28,12 @@ class ApiConstants {
   static const String bearerPrefix = 'Bearer';
   static const String apiKeyHeaderKey = 'X-API-Key';
 
-  // Common API endpoints
-  static const String authEndpoint = '/auth';
-  static const String loginEndpoint = '$authEndpoint/login';
-  static const String refreshEndpoint = '$authEndpoint/refresh';
-  static const String logoutEndpoint = '$authEndpoint/logout';
+  // Authentication endpoints (from environment config)
+  static String get authEndpoint => EnvironmentConfig.authEndpoint;
+  static String get loginEndpoint => EnvironmentConfig.loginEndpoint;
+  static String get registerEndpoint => EnvironmentConfig.registerEndpoint;
+  static String get refreshEndpoint => EnvironmentConfig.refreshEndpoint;
+  static String get logoutEndpoint => EnvironmentConfig.logoutEndpoint;
   static const String userEndpoint = '/user';
   static const String profileEndpoint = '$userEndpoint/profile';
 
@@ -68,9 +62,10 @@ class ApiConstants {
     // Example: 'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
   ];
 
-  // Development flags
-  static const bool enableLogging = true;
-  static const bool enableCertificatePinning = false; // Disabled for development
+  // Development flags (environment-specific)
+  static bool get enableLogging => EnvironmentConfig.enableLogging;
+  static bool get enableCertificatePinning => EnvironmentConfig.enableCertificatePinning;
+  static bool get enableDetailedLogging => EnvironmentConfig.enableDetailedLogging;
 
   // API rate limiting
   static const int maxRequestsPerMinute = 100;

@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter/foundation.dart';
 
+import '../constants/environment_config.dart';
 import '../database/hive_service.dart';
 import '../database/models/app_settings.dart';
 import '../database/providers/database_providers.dart';
@@ -267,15 +268,33 @@ class AppConfiguration extends _$AppConfiguration {
     final buildMode = ref.watch(appBuildModeProvider);
 
     return {
-      'apiTimeout': 30000, // 30 seconds
+      // Environment-specific API configuration
+      'environment': EnvironmentConfig.currentEnvironment.name,
+      'baseUrl': EnvironmentConfig.baseUrl,
+      'apiPath': EnvironmentConfig.apiPath,
+      'fullBaseUrl': EnvironmentConfig.fullBaseUrl,
+      'connectTimeout': EnvironmentConfig.connectTimeout,
+      'receiveTimeout': EnvironmentConfig.receiveTimeout,
+      'sendTimeout': EnvironmentConfig.sendTimeout,
+      'maxRetries': EnvironmentConfig.maxRetries,
+      'retryDelay': EnvironmentConfig.retryDelay.inMilliseconds,
+
+      // Environment-specific logging
+      'enableLogging': EnvironmentConfig.enableLogging,
+      'enableDetailedLogging': EnvironmentConfig.enableDetailedLogging,
+      'enableCertificatePinning': EnvironmentConfig.enableCertificatePinning,
+      'logLevel': EnvironmentConfig.enableDetailedLogging ? 'verbose' : 'error',
+
+      // General configuration
       'cacheTimeout': 3600000, // 1 hour in milliseconds
-      'maxRetries': 3,
-      'retryDelay': 1000, // 1 second
-      'enableLogging': buildMode == 'debug',
-      'logLevel': buildMode == 'debug' ? 'verbose' : 'error',
       'maxCacheSize': 100 * 1024 * 1024, // 100MB
       'imageQuality': 85,
       'compressionEnabled': true,
+
+      // Environment flags
+      'isDevelopment': EnvironmentConfig.isDevelopment,
+      'isStaging': EnvironmentConfig.isStaging,
+      'isProduction': EnvironmentConfig.isProduction,
     };
   }
 
@@ -344,5 +363,70 @@ class ErrorTracker extends _$ErrorTracker {
   /// Get recent errors
   List<Map<String, dynamic>> getRecentErrors({int count = 10}) {
     return state.reversed.take(count).toList();
+  }
+}
+
+/// Environment debug information provider
+@riverpod
+Map<String, dynamic> environmentDebugInfo(EnvironmentDebugInfoRef ref) {
+  return EnvironmentConfig.debugInfo;
+}
+
+/// API connectivity test provider
+@riverpod
+class ApiConnectivityTest extends _$ApiConnectivityTest {
+  @override
+  Future<Map<String, dynamic>> build() async {
+    return _testConnectivity();
+  }
+
+  Future<Map<String, dynamic>> _testConnectivity() async {
+    try {
+      debugPrint('🔍 Testing API connectivity to ${EnvironmentConfig.baseUrl}...');
+
+      final result = {
+        'baseUrl': EnvironmentConfig.baseUrl,
+        'fullBaseUrl': EnvironmentConfig.fullBaseUrl,
+        'loginUrl': EnvironmentConfig.loginUrl,
+        'environment': EnvironmentConfig.currentEnvironment.name,
+        'timestamp': DateTime.now().toIso8601String(),
+        'status': 'success',
+        'message': 'Configuration loaded successfully',
+        'endpoints': {
+          'login': EnvironmentConfig.loginUrl,
+          'register': EnvironmentConfig.registerUrl,
+          'refresh': EnvironmentConfig.refreshUrl,
+          'logout': EnvironmentConfig.logoutUrl,
+        },
+        'settings': {
+          'connectTimeout': EnvironmentConfig.connectTimeout,
+          'receiveTimeout': EnvironmentConfig.receiveTimeout,
+          'sendTimeout': EnvironmentConfig.sendTimeout,
+          'maxRetries': EnvironmentConfig.maxRetries,
+          'retryDelay': EnvironmentConfig.retryDelay.inMilliseconds,
+          'enableLogging': EnvironmentConfig.enableLogging,
+          'enableDetailedLogging': EnvironmentConfig.enableDetailedLogging,
+        }
+      };
+
+      debugPrint('✅ API connectivity test completed successfully');
+      return result;
+    } catch (error, stackTrace) {
+      debugPrint('❌ API connectivity test failed: $error');
+      debugPrint('Stack trace: $stackTrace');
+
+      return {
+        'status': 'error',
+        'error': error.toString(),
+        'timestamp': DateTime.now().toIso8601String(),
+        'baseUrl': EnvironmentConfig.baseUrl,
+      };
+    }
+  }
+
+  /// Retry connectivity test
+  Future<void> retry() async {
+    state = const AsyncValue.loading();
+    state = AsyncValue.data(await _testConnectivity());
   }
 }

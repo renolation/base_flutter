@@ -1,6 +1,8 @@
+import 'package:base_flutter/core/utils/utils.dart';
 import 'package:dio/dio.dart';
-import '../../../../core/errors/exceptions.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/network/api_constants.dart';
+import '../../../../core/services/api_service.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
@@ -34,58 +36,43 @@ abstract class AuthRemoteDataSource {
   });
 }
 
-class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  final DioClient dioClient;
-
-  AuthRemoteDataSourceImpl({required this.dioClient});
+class AuthRemoteDataSourceImpl extends BaseApiService implements AuthRemoteDataSource {
+  AuthRemoteDataSourceImpl({required DioClient dioClient}) : super(dioClient);
 
   @override
   Future<UserModel> login({
     required String email,
     required String password,
   }) async {
-    try {
-      // Using JSONPlaceholder as a mock API
-      // In real app, this would be your actual auth endpoint
-      final response = await dioClient.dio.post(
-        'https://jsonplaceholder.typicode.com/posts',
+    return executeRequest(
+      () => dioClient.post(
+        ApiConstants.loginEndpoint,
         data: {
           'email': email,
           'password': password,
         },
-      );
+      ),
+      (data) {
+        final responseData = data as DataMap;
 
-      // Mock validation - accept any email/password for demo
-      // In real app, the server would validate credentials
-      if (email.isEmpty || password.isEmpty) {
-        throw const ServerException('Invalid credentials');
-      }
-
-      // Mock response for demonstration
-      // In real app, parse actual API response
-      final mockUser = {
-        'id': '1',
-        'email': email,
-        'name': email.split('@').first,
-        'token': 'mock_jwt_token_${DateTime.now().millisecondsSinceEpoch}',
-        'tokenExpiry': DateTime.now().add(const Duration(days: 7)).toIso8601String(),
-      };
-
-      return UserModel.fromJson(mockUser);
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        throw const ServerException('Invalid credentials');
-      } else if (e.response?.statusCode == 404) {
-        throw const ServerException('User not found');
-      } else {
-        throw ServerException(e.message ?? 'Login failed');
-      }
-    } catch (e) {
-      if (e.toString().contains('Invalid credentials')) {
-        rethrow;
-      }
-      throw ServerException(e.toString());
-    }
+        // If the backend returns user data in a 'user' field
+        if (responseData.containsKey('user')) {
+          final userData = DataMap.from(responseData['user']);
+          // Add token if it's returned separately
+          if (responseData.containsKey('token')) {
+            userData['token'] = responseData['token'];
+          }
+          if (responseData.containsKey('tokenExpiry')) {
+            userData['tokenExpiry'] = responseData['tokenExpiry'];
+          }
+          return UserModel.fromJson(userData);
+        }
+        // If the backend returns everything in the root
+        else {
+          return UserModel.fromJson(responseData);
+        }
+      },
+    );
   }
 
   @override
@@ -94,73 +81,76 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String password,
     required String name,
   }) async {
-    try {
-      // Mock API call
-      final response = await dioClient.dio.post(
-        'https://jsonplaceholder.typicode.com/users',
+    return executeRequest(
+      () => dioClient.post(
+        ApiConstants.registerEndpoint,
         data: {
           'email': email,
           'password': password,
           'name': name,
         },
-      );
+      ),
+      (data) {
+        final responseData = data as Map<String, dynamic>;
 
-      // Mock response
-      final mockUser = {
-        'id': DateTime.now().millisecondsSinceEpoch.toString(),
-        'email': email,
-        'name': name,
-        'token': 'mock_jwt_token_${DateTime.now().millisecondsSinceEpoch}',
-        'tokenExpiry': DateTime.now().add(const Duration(days: 7)).toIso8601String(),
-      };
-
-      return UserModel.fromJson(mockUser);
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 409) {
-        throw const ServerException('Email already exists');
-      } else {
-        throw ServerException(e.message ?? 'Registration failed');
-      }
-    } catch (e) {
-      throw ServerException(e.toString());
-    }
+        // If the backend returns user data in a 'user' field
+        if (responseData.containsKey('user')) {
+          final userData = Map<String, dynamic>.from(responseData['user']);
+          // Add token if it's returned separately
+          if (responseData.containsKey('token')) {
+            userData['token'] = responseData['token'];
+          }
+          if (responseData.containsKey('tokenExpiry')) {
+            userData['tokenExpiry'] = responseData['tokenExpiry'];
+          }
+          return UserModel.fromJson(userData);
+        }
+        // If the backend returns everything in the root
+        else {
+          return UserModel.fromJson(responseData);
+        }
+      },
+    );
   }
 
   @override
   Future<void> logout() async {
-    try {
-      // Mock API call
-      await dioClient.dio.post('https://jsonplaceholder.typicode.com/posts');
-      // In real app, you might call a logout endpoint to invalidate token
-    } catch (e) {
-      throw ServerException(e.toString());
-    }
+    await executeRequest(
+      () => dioClient.post(ApiConstants.logoutEndpoint),
+      (_) {}, // No return value needed for logout
+    );
   }
 
   @override
   Future<UserModel> refreshToken(String token) async {
-    try {
-      // Mock API call
-      final response = await dioClient.dio.post(
-        'https://jsonplaceholder.typicode.com/users',
+    return executeRequest(
+      () => dioClient.post(
+        ApiConstants.refreshEndpoint,
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
-      );
+      ),
+      (data) {
+        final responseData = data as Map<String, dynamic>;
 
-      // Mock response
-      final mockUser = {
-        'id': '1',
-        'email': 'user@example.com',
-        'name': 'User',
-        'token': 'refreshed_token_${DateTime.now().millisecondsSinceEpoch}',
-        'tokenExpiry': DateTime.now().add(const Duration(days: 7)).toIso8601String(),
-      };
-
-      return UserModel.fromJson(mockUser);
-    } catch (e) {
-      throw ServerException(e.toString());
-    }
+        // If the backend returns user data in a 'user' field
+        if (responseData.containsKey('user')) {
+          final userData = Map<String, dynamic>.from(responseData['user']);
+          // Add new token if it's returned separately
+          if (responseData.containsKey('token')) {
+            userData['token'] = responseData['token'];
+          }
+          if (responseData.containsKey('tokenExpiry')) {
+            userData['tokenExpiry'] = responseData['tokenExpiry'];
+          }
+          return UserModel.fromJson(userData);
+        }
+        // If the backend returns everything in the root
+        else {
+          return UserModel.fromJson(responseData);
+        }
+      },
+    );
   }
 
   @override
@@ -168,30 +158,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String name,
     String? avatarUrl,
   }) async {
-    try {
-      // Mock API call
-      final response = await dioClient.dio.put(
-        'https://jsonplaceholder.typicode.com/users/1',
+    // For now, keeping this as mock since profile endpoints are not specified
+    // When you have the actual endpoint, update this to use executeRequest
+    return executeRequest(
+      () => dioClient.put(
+        '/user/profile', // Replace with actual endpoint when available
         data: {
           'name': name,
           'avatarUrl': avatarUrl,
         },
-      );
-
-      // Mock response
-      final mockUser = {
-        'id': '1',
-        'email': 'user@example.com',
-        'name': name,
-        'avatarUrl': avatarUrl,
-        'token': 'mock_jwt_token_${DateTime.now().millisecondsSinceEpoch}',
-        'tokenExpiry': DateTime.now().add(const Duration(days: 7)).toIso8601String(),
-      };
-
-      return UserModel.fromJson(mockUser);
-    } catch (e) {
-      throw ServerException(e.toString());
-    }
+      ),
+      (data) => UserModel.fromJson(data as Map<String, dynamic>),
+    );
   }
 
   @override
@@ -199,34 +177,30 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String oldPassword,
     required String newPassword,
   }) async {
-    try {
-      // Mock API call
-      await dioClient.dio.post(
-        'https://jsonplaceholder.typicode.com/posts',
+    await executeRequest(
+      () => dioClient.post(
+        '/auth/change-password', // Replace with actual endpoint when available
         data: {
           'oldPassword': oldPassword,
           'newPassword': newPassword,
         },
-      );
-    } catch (e) {
-      throw ServerException(e.toString());
-    }
+      ),
+      (_) {}, // No return value needed
+    );
   }
 
   @override
   Future<void> resetPassword({
     required String email,
   }) async {
-    try {
-      // Mock API call
-      await dioClient.dio.post(
-        'https://jsonplaceholder.typicode.com/posts',
+    await executeRequest(
+      () => dioClient.post(
+        '/auth/reset-password', // Replace with actual endpoint when available
         data: {
           'email': email,
         },
-      );
-    } catch (e) {
-      throw ServerException(e.toString());
-    }
+      ),
+      (_) {}, // No return value needed
+    );
   }
 }

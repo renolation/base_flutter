@@ -2,6 +2,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../network/auth_service_example.dart';
 import '../network/dio_client.dart';
 import '../network/network_info.dart';
 
@@ -48,4 +49,16 @@ final isConnectedProvider = FutureProvider<bool>((ref) async {
 final networkConnectionDetailsProvider = FutureProvider((ref) async {
   final networkInfo = ref.watch(networkInfoProvider) as NetworkInfoImpl;
   return await networkInfo.getConnectionDetails();
+});
+
+/// Provider for AuthServiceExample - demonstrates localhost:3000 API usage
+final authServiceExampleProvider = Provider<AuthServiceExample>((ref) {
+  final dioClient = ref.watch(dioClientProvider);
+  return AuthServiceExample(dioClient);
+});
+
+/// Provider for environment information debugging
+final environmentInfoProvider = Provider<Map<String, dynamic>>((ref) {
+  final authService = ref.watch(authServiceExampleProvider);
+  return authService.getEnvironmentInfo();
 });
