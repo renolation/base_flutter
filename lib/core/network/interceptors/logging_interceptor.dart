@@ -7,19 +7,19 @@ import '../api_constants.dart';
 
 /// Custom logging interceptor for detailed request/response logging
 class LoggingInterceptor extends Interceptor {
-  bool enabled;
+   bool enabled;
   final bool logRequestBody;
   final bool logResponseBody;
   final bool logHeaders;
   final int maxBodyLength;
 
   LoggingInterceptor({
-    this.enabled = ApiConstants.enableLogging,
+    bool? enabled,
     this.logRequestBody = true,
     this.logResponseBody = true,
     this.logHeaders = true,
     this.maxBodyLength = 2000,
-  });
+  }) : enabled = enabled ?? ApiConstants.enableLogging;
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
@@ -88,7 +88,7 @@ class LoggingInterceptor extends Interceptor {
     final method = response.requestOptions.method.toUpperCase();
     final uri = response.requestOptions.uri;
     final duration = DateTime.now().millisecondsSinceEpoch -
-                    (response.requestOptions.extra['start_time'] as int? ?? 0);
+        (response.requestOptions.extra['start_time'] as int? ?? 0);
 
     // Status icon based on response code
     String statusIcon;

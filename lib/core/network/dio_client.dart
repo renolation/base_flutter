@@ -41,9 +41,9 @@ class DioClient {
   Dio _createDio(String baseUrl) {
     final dio = Dio(BaseOptions(
       baseUrl: baseUrl + ApiConstants.apiPath,
-      connectTimeout: const Duration(milliseconds: ApiConstants.connectTimeout),
-      receiveTimeout: const Duration(milliseconds: ApiConstants.receiveTimeout),
-      sendTimeout: const Duration(milliseconds: ApiConstants.sendTimeout),
+      connectTimeout: Duration(milliseconds: ApiConstants.connectTimeout),
+      receiveTimeout:  Duration(milliseconds: ApiConstants.receiveTimeout),
+      sendTimeout:  Duration(milliseconds: ApiConstants.sendTimeout),
       headers: {
         'Content-Type': ApiConstants.contentType,
         'Accept': ApiConstants.accept,
@@ -104,7 +104,7 @@ class DioClient {
         }
 
         // Configure timeouts
-        client.connectionTimeout = const Duration(
+        client.connectionTimeout =  Duration(
           milliseconds: ApiConstants.connectTimeout,
         );
 
