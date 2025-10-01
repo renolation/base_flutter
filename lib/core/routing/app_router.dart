@@ -1,7 +1,10 @@
+import 'package:base_flutter/features/lesson/lesson_screen.dart';
+import 'package:base_flutter/features/loading_lesson/loading_lesson_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/home/models.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
 import 'route_guards.dart';
@@ -27,9 +30,37 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: RoutePaths.home,
         name: RouteNames.home,
         pageBuilder: (context, state) => _buildPageWithTransition(
-          child: const HomePage(),
+          child: const LevelMapScreen(),
           state: state,
         ),
+      ),
+
+      GoRoute(
+        path: RoutePaths.lesson,
+        name: RouteNames.lesson,
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          child: const LoadingLessonScreen(),
+          state: state,
+        ),
+        routes: [
+          GoRoute(
+            path: 'test',
+            name: 'test',
+            pageBuilder: (context, state) {
+              final lessonResponse = state.extra as LessonResponse?;
+              if (lessonResponse == null) {
+                return _buildPageWithTransition(
+                  child: const _PlaceholderPage(title: 'No lesson data provided'),
+                  state: state,
+                );
+              }
+              return _buildPageWithTransition(
+                child: LessonScreen(lessonResponse: lessonResponse),
+                state: state,
+              );
+            },
+          ),
+        ]
       ),
 
       // Settings routes with nested navigation

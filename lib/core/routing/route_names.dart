@@ -7,6 +7,7 @@ class RouteNames {
   static const String settings = 'settings';
   static const String profile = 'profile';
   static const String about = 'about';
+  static const String lesson = 'lesson';
 
   // Auth routes
   static const String login = 'login';
