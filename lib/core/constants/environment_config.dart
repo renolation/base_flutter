@@ -1,7 +1,6 @@
 /// Environment configuration for API endpoints and settings
 enum Environment {
   development,
-  staging,
   production,
 }
 
@@ -13,107 +12,75 @@ class EnvironmentConfig {
   /// Current environment - Change this to switch environments
   static const Environment currentEnvironment = Environment.development;
 
+  /// Environment configurations as JSON map for easy editing
+  static const Map<Environment, Map<String, dynamic>> _configs = {
+    Environment.development: {
+      'baseUrl': 'http://103.188.82.191:4003',
+      'apiPath': '',
+      'connectTimeout': 30000,
+      'receiveTimeout': 30000,
+      'sendTimeout': 30000,
+      'enableLogging': true,
+      'enableDetailedLogging': true,
+      'enableCertificatePinning': false,
+      'maxRetries': 3,
+      'retryDelay': 1000, // milliseconds
+    },
+    Environment.production: {
+      'baseUrl': 'https://api.example.com',
+      'apiPath': '/api/v1',
+      'connectTimeout': 30000,
+      'receiveTimeout': 30000,
+      'sendTimeout': 30000,
+      'enableLogging': false,
+      'enableDetailedLogging': false,
+      'enableCertificatePinning': true,
+      'maxRetries': 3,
+      'retryDelay': 1000, // milliseconds
+    },
+  };
+
+  /// Get current environment configuration
+  static Map<String, dynamic> get _currentConfig => _configs[currentEnvironment]!;
+
   /// Get base URL for current environment
-  static String get baseUrl {
-    switch (currentEnvironment) {
-      case Environment.development:
-        return 'http://103.188.82.191:4003';
-      case Environment.staging:
-        return 'https://api-staging.example.com';
-      case Environment.production:
-        return 'https://api.example.com';
-    }
-  }
+  static String get baseUrl => _currentConfig['baseUrl'] as String;
 
   /// Get API path for current environment
-  static String get apiPath {
-    switch (currentEnvironment) {
-      case Environment.development:
-        // No API prefix for local development - endpoints are directly at /auth/
-        return '';
-      case Environment.staging:
-      case Environment.production:
-        return '/api/v1';
-    }
-  }
+  static String get apiPath => _currentConfig['apiPath'] as String;
 
   /// Check if current environment is development
   static bool get isDevelopment => currentEnvironment == Environment.development;
 
-  /// Check if current environment is staging
-  static bool get isStaging => currentEnvironment == Environment.staging;
-
   /// Check if current environment is production
   static bool get isProduction => currentEnvironment == Environment.production;
 
-  /// Get timeout configurations based on environment
-  static int get connectTimeout {
-    switch (currentEnvironment) {
-      case Environment.development:
-        return 10000; // 10 seconds for local development
-      case Environment.staging:
-        return 20000; // 20 seconds for staging
-      case Environment.production:
-        return 30000; // 30 seconds for production
-    }
-  }
+  /// Check if current environment is staging (for backward compatibility, always false)
+  static bool get isStaging => false;
 
-  static int get receiveTimeout {
-    switch (currentEnvironment) {
-      case Environment.development:
-        return 15000; // 15 seconds for local development
-      case Environment.staging:
-        return 25000; // 25 seconds for staging
-      case Environment.production:
-        return 30000; // 30 seconds for production
-    }
-  }
+  /// Timeout configurations from config map
+  static int get connectTimeout => _currentConfig['connectTimeout'] as int;
+  static int get receiveTimeout => _currentConfig['receiveTimeout'] as int;
+  static int get sendTimeout => _currentConfig['sendTimeout'] as int;
 
-  static int get sendTimeout {
-    switch (currentEnvironment) {
-      case Environment.development:
-        return 15000; // 15 seconds for local development
-      case Environment.staging:
-        return 25000; // 25 seconds for staging
-      case Environment.production:
-        return 30000; // 30 seconds for production
-    }
-  }
+  /// Enable/disable features from config map
+  static bool get enableLogging => _currentConfig['enableLogging'] as bool;
+  static bool get enableDetailedLogging => _currentConfig['enableDetailedLogging'] as bool;
+  static bool get enableCertificatePinning => _currentConfig['enableCertificatePinning'] as bool;
 
-  /// Get retry configurations based on environment
-  static int get maxRetries {
-    switch (currentEnvironment) {
-      case Environment.development:
-        return 2; // Fewer retries for local development
-      case Environment.staging:
-        return 3; // Standard retries for staging
-      case Environment.production:
-        return 3; // Standard retries for production
-    }
-  }
+  /// Retry configurations
+  static int get maxRetries => _currentConfig['maxRetries'] as int;
+  static Duration get retryDelay => Duration(milliseconds: _currentConfig['retryDelay'] as int);
 
-  static Duration get retryDelay {
-    switch (currentEnvironment) {
-      case Environment.development:
-        return const Duration(milliseconds: 500); // Faster retry for local
-      case Environment.staging:
-        return const Duration(seconds: 1); // Standard retry delay
-      case Environment.production:
-        return const Duration(seconds: 1); // Standard retry delay
-    }
-  }
-
-  /// Enable/disable features based on environment
-  static bool get enableLogging => !isProduction;
-  static bool get enableDetailedLogging => isDevelopment;
-  static bool get enableCertificatePinning => isProduction;
-
-  /// Authentication endpoints (consistent across environments)
+  /// Authentication endpoints
   static const String authEndpoint = '/auth';
   static const String loginEndpoint = '$authEndpoint/login';
   static const String registerEndpoint = '$authEndpoint/register';
   static const String refreshEndpoint = '$authEndpoint/refresh';
   static const String logoutEndpoint = '$authEndpoint/logout';
+  static const String resetPasswordEndpoint = '$authEndpoint/reset-password';
+  static const String changePasswordEndpoint = '$authEndpoint/change-password';
+  static const String verifyEmailEndpoint = '$authEndpoint/verify-email';
 
   /// Full API URLs
   static String get fullBaseUrl => baseUrl + apiPath;
@@ -121,20 +88,43 @@ class EnvironmentConfig {
   static String get registerUrl => baseUrl + registerEndpoint;
   static String get refreshUrl => baseUrl + refreshEndpoint;
   static String get logoutUrl => baseUrl + logoutEndpoint;
+  static String get resetPasswordUrl => baseUrl + resetPasswordEndpoint;
+  static String get changePasswordUrl => baseUrl + changePasswordEndpoint;
+  static String get verifyEmailUrl => baseUrl + verifyEmailEndpoint;
+
+  /// User endpoints
+  static const String userEndpoint = '/user';
+  static const String profileEndpoint = '$userEndpoint/profile';
+  static const String updateProfileEndpoint = '$userEndpoint/update';
+  static const String deleteAccountEndpoint = '$userEndpoint/delete';
+
+  /// Full User URLs
+  static String get profileUrl => baseUrl + profileEndpoint;
+  static String get updateProfileUrl => baseUrl + updateProfileEndpoint;
+  static String get deleteAccountUrl => baseUrl + deleteAccountEndpoint;
+
+  /// Todo endpoints
+  static const String todosEndpoint = '/todo';
+
+  /// Full Todo URLs
+  static String get todosUrl => baseUrl + todosEndpoint;
 
   /// Debug information
   static Map<String, dynamic> get debugInfo => {
         'environment': currentEnvironment.name,
-        'baseUrl': baseUrl,
-        'apiPath': apiPath,
-        'fullBaseUrl': fullBaseUrl,
-        'connectTimeout': connectTimeout,
-        'receiveTimeout': receiveTimeout,
-        'sendTimeout': sendTimeout,
-        'maxRetries': maxRetries,
-        'retryDelay': retryDelay.inMilliseconds,
-        'enableLogging': enableLogging,
-        'enableDetailedLogging': enableDetailedLogging,
-        'enableCertificatePinning': enableCertificatePinning,
+        'config': _currentConfig,
+        'endpoints': {
+          'login': loginUrl,
+          'register': registerUrl,
+          'refresh': refreshUrl,
+          'logout': logoutUrl,
+          'profile': profileUrl,
+        },
       };
+
+  /// Get a specific config value
+  static T? getConfig<T>(String key) => _currentConfig[key] as T?;
+
+  /// Check if a config key exists
+  static bool hasConfig(String key) => _currentConfig.containsKey(key);
 }

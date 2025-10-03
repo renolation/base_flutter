@@ -394,9 +394,9 @@ class ApiConnectivityTest extends _$ApiConnectivityTest {
         'message': 'Configuration loaded successfully',
         'endpoints': {
           'login': EnvironmentConfig.loginUrl,
-          'register': EnvironmentConfig.registerUrl,
-          'refresh': EnvironmentConfig.refreshUrl,
-          'logout': EnvironmentConfig.logoutUrl,
+          // 'register': EnvironmentConfig.registerUrl,
+          // 'refresh': EnvironmentConfig.refreshUrl,
+          // 'logout': EnvironmentConfig.logoutUrl,
         },
         'settings': {
           'connectTimeout': EnvironmentConfig.connectTimeout,

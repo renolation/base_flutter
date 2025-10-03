@@ -216,7 +216,7 @@ final errorTrackerProvider = AutoDisposeNotifierProvider<ErrorTracker,
 
 typedef _$ErrorTracker = AutoDisposeNotifier<List<Map<String, dynamic>>>;
 String _$apiConnectivityTestHash() =>
-    r'19c63d75d09ad8f95452afb1a409528fcdd5cbaa';
+    r'af903de0fec684ef6c701190dfca2a25f97a9392';
 
 /// API connectivity test provider
 ///

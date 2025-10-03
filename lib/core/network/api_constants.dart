@@ -9,12 +9,12 @@ class ApiConstants {
   static String get baseUrl => EnvironmentConfig.baseUrl;
   static String get apiPath => EnvironmentConfig.apiPath;
 
-  // Timeout configurations (environment-specific)
+  // Timeout configurations
   static int get connectTimeout => EnvironmentConfig.connectTimeout;
   static int get receiveTimeout => EnvironmentConfig.receiveTimeout;
   static int get sendTimeout => EnvironmentConfig.sendTimeout;
 
-  // Retry configurations (environment-specific)
+  // Retry configurations
   static int get maxRetries => EnvironmentConfig.maxRetries;
   static Duration get retryDelay => EnvironmentConfig.retryDelay;
 
@@ -28,19 +28,21 @@ class ApiConstants {
   static const String bearerPrefix = 'Bearer';
   static const String apiKeyHeaderKey = 'X-API-Key';
 
-  // Authentication endpoints (from environment config)
+  // Authentication endpoints
   static String get authEndpoint => EnvironmentConfig.authEndpoint;
   static String get loginEndpoint => EnvironmentConfig.loginEndpoint;
   static String get registerEndpoint => EnvironmentConfig.registerEndpoint;
   static String get refreshEndpoint => EnvironmentConfig.refreshEndpoint;
   static String get logoutEndpoint => EnvironmentConfig.logoutEndpoint;
-  static const String userEndpoint = '/user';
-  static const String profileEndpoint = '$userEndpoint/profile';
+  static String get resetPasswordEndpoint => EnvironmentConfig.resetPasswordEndpoint;
+  static String get changePasswordEndpoint => EnvironmentConfig.changePasswordEndpoint;
+  static String get verifyEmailEndpoint => EnvironmentConfig.verifyEmailEndpoint;
 
-  // Example service endpoints (for demonstration)
-  static const String todosEndpoint = '/todos';
-  static const String postsEndpoint = '/posts';
-  static const String usersEndpoint = '/users';
+  // User endpoints
+  static String get userEndpoint => EnvironmentConfig.userEndpoint;
+  static String get profileEndpoint => EnvironmentConfig.profileEndpoint;
+  static String get updateProfileEndpoint => EnvironmentConfig.updateProfileEndpoint;
+  static String get deleteAccountEndpoint => EnvironmentConfig.deleteAccountEndpoint;
 
   // Cache configurations
   static const Duration cacheMaxAge = Duration(minutes: 5);
@@ -66,8 +68,4 @@ class ApiConstants {
   static bool get enableLogging => EnvironmentConfig.enableLogging;
   static bool get enableCertificatePinning => EnvironmentConfig.enableCertificatePinning;
   static bool get enableDetailedLogging => EnvironmentConfig.enableDetailedLogging;
-
-  // API rate limiting
-  static const int maxRequestsPerMinute = 100;
-  static const Duration rateLimitWindow = Duration(minutes: 1);
 }

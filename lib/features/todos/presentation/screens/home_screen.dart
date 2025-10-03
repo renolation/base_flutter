@@ -1,23 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/todo_providers.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class TodoScreen extends ConsumerStatefulWidget {
+  const TodoScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<TodoScreen> createState() => _TodoScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  bool _isLoading = false;
-  List<Map<String, dynamic>> _todos = [];
+class _TodoScreenState extends ConsumerState<TodoScreen> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    _loadTodos();
-  }
 
   @override
   void dispose() {
@@ -25,86 +19,16 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  // Mock todos data - will be replaced with API call
-  Future<void> _loadTodos() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Simulate API call delay
-    await Future.delayed(const Duration(seconds: 1));
-
-    // Mock data simulating JSONPlaceholder response
-    final mockTodos = [
-      {
-        'id': 1,
-        'title': 'Complete project documentation',
-        'completed': false,
-        'userId': 1,
-      },
-      {
-        'id': 2,
-        'title': 'Review code changes',
-        'completed': true,
-        'userId': 1,
-      },
-      {
-        'id': 3,
-        'title': 'Update Flutter dependencies',
-        'completed': false,
-        'userId': 1,
-      },
-      {
-        'id': 4,
-        'title': 'Write unit tests',
-        'completed': false,
-        'userId': 2,
-      },
-      {
-        'id': 5,
-        'title': 'Fix navigation bug',
-        'completed': true,
-        'userId': 2,
-      },
-    ];
-
-    if (mounted) {
-      setState(() {
-        _todos = mockTodos;
-        _isLoading = false;
-      });
-    }
-  }
-
-  List<Map<String, dynamic>> get _filteredTodos {
-    if (_searchQuery.isEmpty) {
-      return _todos;
-    }
-    return _todos.where((todo) {
-      return todo['title']
-          .toString()
-          .toLowerCase()
-          .contains(_searchQuery.toLowerCase());
-    }).toList();
-  }
-
-  void _toggleTodoStatus(int id) {
-    setState(() {
-      final todoIndex = _todos.indexWhere((todo) => todo['id'] == id);
-      if (todoIndex != -1) {
-        _todos[todoIndex]['completed'] = !_todos[todoIndex]['completed'];
-      }
-    });
-  }
-
   Future<void> _refreshTodos() async {
-    await _loadTodos();
+    await ref.read(todosProvider.notifier).refresh();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final todosAsync = ref.watch(todosProvider);
+    final filteredTodos = ref.watch(filteredTodosProvider(_searchQuery));
 
     return Scaffold(
       appBar: AppBar(
@@ -165,25 +89,61 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // Todos List
           Expanded(
-            child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : _todos.isEmpty
-                    ? _buildEmptyState()
-                    : RefreshIndicator(
-                        onRefresh: _refreshTodos,
-                        child: _filteredTodos.isEmpty
-                            ? _buildNoResultsState()
-                            : ListView.builder(
-                                padding: const EdgeInsets.all(16.0),
-                                itemCount: _filteredTodos.length,
-                                itemBuilder: (context, index) {
-                                  final todo = _filteredTodos[index];
-                                  return _buildTodoCard(todo);
-                                },
-                              ),
+            child: todosAsync.when(
+              data: (todos) {
+                if (todos.isEmpty) {
+                  return _buildEmptyState();
+                }
+                if (filteredTodos.isEmpty) {
+                  return _buildNoResultsState();
+                }
+                return RefreshIndicator(
+                  onRefresh: _refreshTodos,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16.0),
+                    itemCount: filteredTodos.length,
+                    itemBuilder: (context, index) {
+                      final todo = filteredTodos[index];
+                      return _buildTodoCard(todo);
+                    },
+                  ),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: colorScheme.error,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error loading todos',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: colorScheme.error,
                       ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      error.toString(),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      onPressed: _refreshTodos,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -202,10 +162,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildTodoCard(Map<String, dynamic> todo) {
+  Widget _buildTodoCard(todo) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isCompleted = todo['completed'] as bool;
+    final isCompleted = todo.completed;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8.0),
@@ -220,13 +180,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         leading: Checkbox(
           value: isCompleted,
-          onChanged: (_) => _toggleTodoStatus(todo['id']),
+          onChanged: (_) => ref.read(todosProvider.notifier).toggleTodo(todo.id),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
           ),
         ),
         title: Text(
-          todo['title'],
+          todo.title,
           style: theme.textTheme.bodyLarge?.copyWith(
             decoration: isCompleted ? TextDecoration.lineThrough : null,
             color: isCompleted
@@ -234,11 +194,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 : colorScheme.onSurface,
           ),
         ),
-        subtitle: Text(
-          'ID: ${todo['id']} • User: ${todo['userId']}',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (todo.description != null && todo.description!.isNotEmpty)
+              Text(
+                todo.description!,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            const SizedBox(height: 4),
+            Text(
+              'ID: ${todo.id}',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant.withOpacity(0.7),
+                fontSize: 11,
+              ),
+            ),
+          ],
         ),
         trailing: PopupMenuButton<String>(
           onSelected: (value) {

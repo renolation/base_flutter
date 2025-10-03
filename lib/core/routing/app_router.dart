@@ -128,7 +128,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: RoutePaths.todos,
         name: RouteNames.todos,
         pageBuilder: (context, state) => _buildPageWithTransition(
-          child: const HomeScreen(), // Using existing TodoScreen
+          child: const TodoScreen(), // Using existing TodoScreen
           state: state,
         ),
         routes: [
