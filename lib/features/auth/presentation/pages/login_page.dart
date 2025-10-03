@@ -284,7 +284,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
   ) {
     return AnimatedContainer(
       duration: AppSpacing.animationNormal,
-      height: isKeyboardVisible ? 120 : 180,
+      height: isKeyboardVisible ? 120 : 190,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

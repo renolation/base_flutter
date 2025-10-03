@@ -575,38 +575,32 @@ class ThemeSettingsPage extends ConsumerWidget {
       body: Column(
         children: [
           const SizedBox(height: 16),
-          RadioListTile<ThemeMode>(
-            title: const Text('Light'),
-            subtitle: const Text('Use light theme'),
-            value: ThemeMode.light,
+          RadioGroup<ThemeMode>(
             groupValue: themeMode,
             onChanged: (value) {
               if (value != null) {
                 ref.read(themeModeProvider.notifier).setThemeMode(value);
               }
             },
-          ),
-          RadioListTile<ThemeMode>(
-            title: const Text('Dark'),
-            subtitle: const Text('Use dark theme'),
-            value: ThemeMode.dark,
-            groupValue: themeMode,
-            onChanged: (value) {
-              if (value != null) {
-                ref.read(themeModeProvider.notifier).setThemeMode(value);
-              }
-            },
-          ),
-          RadioListTile<ThemeMode>(
-            title: const Text('System'),
-            subtitle: const Text('Follow system theme'),
-            value: ThemeMode.system,
-            groupValue: themeMode,
-            onChanged: (value) {
-              if (value != null) {
-                ref.read(themeModeProvider.notifier).setThemeMode(value);
-              }
-            },
+            child: Column(
+              children: [
+                RadioListTile<ThemeMode>(
+                  title: const Text('Light'),
+                  subtitle: const Text('Use light theme'),
+                  value: ThemeMode.light,
+                ),
+                RadioListTile<ThemeMode>(
+                  title: const Text('Dark'),
+                  subtitle: const Text('Use dark theme'),
+                  value: ThemeMode.dark,
+                ),
+                RadioListTile<ThemeMode>(
+                  title: const Text('System'),
+                  subtitle: const Text('Follow system theme'),
+                  value: ThemeMode.system,
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 32),
           Padding(

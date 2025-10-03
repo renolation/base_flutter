@@ -17,7 +17,7 @@ class EnvironmentConfig {
   static String get baseUrl {
     switch (currentEnvironment) {
       case Environment.development:
-        return 'http://localhost:3000';
+        return 'http://103.188.82.191:4003';
       case Environment.staging:
         return 'https://api-staging.example.com';
       case Environment.production:

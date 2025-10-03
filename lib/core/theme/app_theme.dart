@@ -16,8 +16,11 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: AppColors.lightScheme,
 
-      // Typography
-      textTheme: AppTypography.textTheme,
+      // Typography - Apply theme colors to text styles
+      textTheme: AppTypography.textTheme.apply(
+        bodyColor: AppColors.lightScheme.onSurface,
+        displayColor: AppColors.lightScheme.onSurface,
+      ),
 
       // App bar theme
       appBarTheme: _lightAppBarTheme,
@@ -40,7 +43,7 @@ class AppTheme {
       floatingActionButtonTheme: _lightFabTheme,
 
       // Input field themes
-      inputDecorationTheme: _inputDecorationTheme,
+      inputDecorationTheme: _getInputDecorationTheme(AppColors.lightScheme),
 
       // Other component themes
       bottomNavigationBarTheme: _lightBottomNavTheme,
@@ -52,14 +55,18 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: AppSpacing.dialogRadius,
         ),
-        titleTextStyle: AppTypography.headlineSmall,
-        contentTextStyle: AppTypography.bodyMedium,
+        titleTextStyle: AppTypography.headlineSmall.copyWith(
+          color: AppColors.lightScheme.onSurface,
+        ),
+        contentTextStyle: AppTypography.bodyMedium.copyWith(
+          color: AppColors.lightScheme.onSurfaceVariant,
+        ),
       ),
       bottomSheetTheme: _bottomSheetTheme,
-      snackBarTheme: _snackBarTheme,
+      snackBarTheme: _getSnackBarTheme(AppColors.lightScheme),
       chipTheme: _lightChipTheme,
       dividerTheme: _dividerTheme,
-      listTileTheme: _listTileTheme,
+      listTileTheme: _getListTileTheme(AppColors.lightScheme),
       switchTheme: _lightSwitchTheme,
       checkboxTheme: _lightCheckboxTheme,
       radioTheme: _lightRadioTheme,
@@ -92,8 +99,11 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: AppColors.darkScheme,
 
-      // Typography
-      textTheme: AppTypography.textTheme,
+      // Typography - Apply theme colors to text styles
+      textTheme: AppTypography.textTheme.apply(
+        bodyColor: AppColors.darkScheme.onSurface,
+        displayColor: AppColors.darkScheme.onSurface,
+      ),
 
       // App bar theme
       appBarTheme: _darkAppBarTheme,
@@ -116,7 +126,7 @@ class AppTheme {
       floatingActionButtonTheme: _darkFabTheme,
 
       // Input field themes
-      inputDecorationTheme: _inputDecorationTheme,
+      inputDecorationTheme: _getInputDecorationTheme(AppColors.darkScheme),
 
       // Other component themes
       bottomNavigationBarTheme: _darkBottomNavTheme,
@@ -128,14 +138,18 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: AppSpacing.dialogRadius,
         ),
-        titleTextStyle: AppTypography.headlineSmall,
-        contentTextStyle: AppTypography.bodyMedium,
+        titleTextStyle: AppTypography.headlineSmall.copyWith(
+          color: AppColors.darkScheme.onSurface,
+        ),
+        contentTextStyle: AppTypography.bodyMedium.copyWith(
+          color: AppColors.darkScheme.onSurfaceVariant,
+        ),
       ),
       bottomSheetTheme: _bottomSheetTheme,
-      snackBarTheme: _snackBarTheme,
+      snackBarTheme: _getSnackBarTheme(AppColors.darkScheme),
       chipTheme: _darkChipTheme,
       dividerTheme: _dividerTheme,
-      listTileTheme: _listTileTheme,
+      listTileTheme: _getListTileTheme(AppColors.darkScheme),
       switchTheme: _darkSwitchTheme,
       checkboxTheme: _darkCheckboxTheme,
       radioTheme: _darkRadioTheme,
@@ -285,7 +299,7 @@ class AppTheme {
     ),
   );
 
-  static InputDecorationTheme get _inputDecorationTheme => InputDecorationTheme(
+  static InputDecorationTheme _getInputDecorationTheme(ColorScheme colorScheme) => InputDecorationTheme(
     filled: true,
     contentPadding: const EdgeInsets.all(AppSpacing.fieldPadding),
     border: OutlineInputBorder(
@@ -308,35 +322,65 @@ class AppTheme {
       borderRadius: AppSpacing.fieldRadius,
       borderSide: const BorderSide(width: AppSpacing.borderWidthThick),
     ),
-    errorStyle: AppTypography.errorText,
-    hintStyle: AppTypography.hintText,
-    labelStyle: AppTypography.bodyMedium,
+    errorStyle: AppTypography.errorText.copyWith(color: colorScheme.error),
+    hintStyle: AppTypography.hintText.copyWith(color: colorScheme.onSurfaceVariant),
+    labelStyle: AppTypography.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
   );
 
-  static BottomNavigationBarThemeData get _lightBottomNavTheme => const BottomNavigationBarThemeData(
+  static BottomNavigationBarThemeData get _lightBottomNavTheme => BottomNavigationBarThemeData(
     type: BottomNavigationBarType.fixed,
     elevation: AppSpacing.elevationMedium,
-    selectedLabelStyle: AppTypography.labelSmall,
-    unselectedLabelStyle: AppTypography.labelSmall,
+    selectedLabelStyle: AppTypography.labelSmall.copyWith(
+      color: AppColors.lightScheme.primary,
+    ),
+    unselectedLabelStyle: AppTypography.labelSmall.copyWith(
+      color: AppColors.lightScheme.onSurfaceVariant,
+    ),
   );
 
-  static BottomNavigationBarThemeData get _darkBottomNavTheme => const BottomNavigationBarThemeData(
+  static BottomNavigationBarThemeData get _darkBottomNavTheme => BottomNavigationBarThemeData(
     type: BottomNavigationBarType.fixed,
     elevation: AppSpacing.elevationMedium,
-    selectedLabelStyle: AppTypography.labelSmall,
-    unselectedLabelStyle: AppTypography.labelSmall,
+    selectedLabelStyle: AppTypography.labelSmall.copyWith(
+      color: AppColors.darkScheme.primary,
+    ),
+    unselectedLabelStyle: AppTypography.labelSmall.copyWith(
+      color: AppColors.darkScheme.onSurfaceVariant,
+    ),
   );
 
   static NavigationBarThemeData get _lightNavigationBarTheme => NavigationBarThemeData(
     height: 80,
     elevation: AppSpacing.elevationMedium,
-    labelTextStyle: WidgetStateProperty.all(AppTypography.labelSmall),
+    labelTextStyle: WidgetStateProperty.resolveWith<TextStyle?>(
+      (Set<WidgetState> states) {
+        if (states.contains(WidgetState.selected)) {
+          return AppTypography.labelSmall.copyWith(
+            color: AppColors.lightScheme.primary,
+          );
+        }
+        return AppTypography.labelSmall.copyWith(
+          color: AppColors.lightScheme.onSurfaceVariant,
+        );
+      },
+    ),
   );
 
   static NavigationBarThemeData get _darkNavigationBarTheme => NavigationBarThemeData(
     height: 80,
     elevation: AppSpacing.elevationMedium,
-    labelTextStyle: WidgetStateProperty.all(AppTypography.labelSmall),
+    labelTextStyle: WidgetStateProperty.resolveWith<TextStyle?>(
+      (Set<WidgetState> states) {
+        if (states.contains(WidgetState.selected)) {
+          return AppTypography.labelSmall.copyWith(
+            color: AppColors.darkScheme.primary,
+          );
+        }
+        return AppTypography.labelSmall.copyWith(
+          color: AppColors.darkScheme.onSurfaceVariant,
+        );
+      },
+    ),
   );
 
   static NavigationRailThemeData get _lightNavigationRailTheme => const NavigationRailThemeData(
@@ -369,13 +413,15 @@ class AppTheme {
     ),
   );
 
-  static SnackBarThemeData get _snackBarTheme => SnackBarThemeData(
+  static SnackBarThemeData _getSnackBarTheme(ColorScheme colorScheme) => SnackBarThemeData(
     elevation: AppSpacing.elevationMedium,
     shape: RoundedRectangleBorder(
       borderRadius: AppSpacing.radiusSM,
     ),
     behavior: SnackBarBehavior.floating,
-    contentTextStyle: AppTypography.bodyMedium,
+    contentTextStyle: AppTypography.bodyMedium.copyWith(
+      color: colorScheme.onInverseSurface,
+    ),
   );
 
   static ChipThemeData get _lightChipTheme => ChipThemeData(
@@ -383,7 +429,9 @@ class AppTheme {
     shape: RoundedRectangleBorder(
       borderRadius: AppSpacing.radiusSM,
     ),
-    labelStyle: AppTypography.labelMedium,
+    labelStyle: AppTypography.labelMedium.copyWith(
+      color: AppColors.lightScheme.onSurfaceVariant,
+    ),
   );
 
   static ChipThemeData get _darkChipTheme => ChipThemeData(
@@ -391,7 +439,9 @@ class AppTheme {
     shape: RoundedRectangleBorder(
       borderRadius: AppSpacing.radiusSM,
     ),
-    labelStyle: AppTypography.labelMedium,
+    labelStyle: AppTypography.labelMedium.copyWith(
+      color: AppColors.darkScheme.onSurfaceVariant,
+    ),
   );
 
   static const DividerThemeData _dividerTheme = DividerThemeData(
@@ -399,13 +449,17 @@ class AppTheme {
     space: AppSpacing.dividerSpacing,
   );
 
-  static ListTileThemeData get _listTileTheme => const ListTileThemeData(
-    contentPadding: EdgeInsets.symmetric(
+  static ListTileThemeData _getListTileTheme(ColorScheme colorScheme) => ListTileThemeData(
+    contentPadding: const EdgeInsets.symmetric(
       horizontal: AppSpacing.listItemPadding,
       vertical: AppSpacing.listItemMargin,
     ),
-    titleTextStyle: AppTypography.titleMedium,
-    subtitleTextStyle: AppTypography.bodyMedium,
+    titleTextStyle: AppTypography.titleMedium.copyWith(
+      color: colorScheme.onSurface,
+    ),
+    subtitleTextStyle: AppTypography.bodyMedium.copyWith(
+      color: colorScheme.onSurfaceVariant,
+    ),
   );
 
   static SwitchThemeData get _lightSwitchTheme => SwitchThemeData(
@@ -463,7 +517,11 @@ class AppTheme {
   /// Create responsive theme based on screen size
   static ThemeData responsiveTheme(BuildContext context, {required bool isDark}) {
     final baseTheme = isDark ? darkTheme : lightTheme;
-    final responsiveTextTheme = AppTypography.responsiveTextTheme(context);
+    final colorScheme = isDark ? AppColors.darkScheme : AppColors.lightScheme;
+    final responsiveTextTheme = AppTypography.responsiveTextTheme(context).apply(
+      bodyColor: colorScheme.onSurface,
+      displayColor: colorScheme.onSurface,
+    );
 
     return baseTheme.copyWith(
       textTheme: responsiveTextTheme,
